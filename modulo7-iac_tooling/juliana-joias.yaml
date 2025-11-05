@@ -1,0 +1,94 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Teste.
+
+Parameters:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: id da vpc 09
+    Default: vpc-06786ee7f7a163059
+
+  MyIpAddress:
+    Type: String
+    Description: ip adress
+    Default: 0.0.0.0/0
+
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: ec2 keys
+    Default: docker-ju
+
+Resources:
+  JulianaAppSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VpcId
+      CidrBlock: 172.30.30.0/24 
+      AvailabilityZone: us-east-1a
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: juliana-app-subnet
+
+  JulianaAppSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Libera portas 22 (SSH) e 8080 (App)
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref MyIpAddress
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: juliana-app-sg
+
+  JulianaAppInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t3.micro
+      KeyName: !Ref KeyName
+      ImageId: '{{resolve:ssm:/aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id}}'
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeviceIndex: '0'
+          SubnetId: !Ref JulianaAppSubnet
+          GroupSet:
+            - !Ref JulianaAppSecurityGroup
+      Tags:
+        - Key: Name
+          Value: juliana-app-instance
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          apt-get update -y
+          apt-get install -y docker.io git
+          systemctl start docker
+          systemctl enable docker
+          usermod -aG docker ubuntu
+
+          cd /home/ubuntu
+          rm -rf proway-docker/
+          git clone https://github.com/dartanghan/proway-docker.git
+          cd proway-docker/modulo7-iac_tooling
+
+          docker build -t jewelry-app .
+          docker run -d -p 8080:80 jewelry-app
+
+Outputs:
+  JulianaInstancePublicIP:
+    Description: IP público da instância EC2 da Juliana
+    Value: !GetAtt JulianaAppInstance.PublicIp
+    Export:
+      Name: JulianaAppPublicIP
+
+  JulianaAppURL:
+    Description: URL para acessar a aplicação da Juliana
+    Value: !Sub http://${JulianaAppInstance.PublicIp}:8080
+    Export:
+      Name: JulianaAppURL
