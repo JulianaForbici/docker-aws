@@ -85,7 +85,7 @@ Para rodar a solução você precisa de:
 No arquivo `Makefile`:
 
 ```make
-STACK_NAME    = desafio-proway-devops
+STACK_NAME    = docker-aws
 TEMPLATE_FILE = juliana-joias.yaml
 REGION        = us-east-1
 KEY_NAME      = docker-ju
