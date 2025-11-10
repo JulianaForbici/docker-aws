@@ -2,14 +2,11 @@ FROM node:18-alpine AS build
 
 WORKDIR /app
 
-# Instala ferramentas de build (necessárias se algum pacote tiver dependências nativas)
-RUN apk add --no-cache python3 make g++
-
 # Copia apenas os arquivos de dependência
 COPY package*.json ./
 
-# Garante que o yarn exista e instala dependências
-RUN npm install -g yarn && yarn install
+# Yarn já existe na imagem, então basta isso:
+RUN yarn install
 
 # Copia o restante do código
 COPY . .
