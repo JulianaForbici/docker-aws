@@ -1,39 +1,41 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >
-  Teste.
+  Site de Joias da Juliana - Testando
 
 Parameters:
   VpcId:
     Type: AWS::EC2::VPC::Id
-    Description: id da vpc 09
+    Description: id da vpc
     Default: vpc-06786ee7f7a163059
+
+  SubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Description: subnet
 
   MyIpAddress:
     Type: String
-    Description: ip adress
+    Description: ip 22
     Default: 0.0.0.0/0
 
   KeyName:
     Type: AWS::EC2::KeyPair::KeyName
-    Description: ec2 keys
+    Description: keys
     Default: docker-ju
 
-Resources:
-  JulianaAppSubnet:
-    Type: AWS::EC2::Subnet
-    Properties:
-      VpcId: !Ref VpcId
-      CidrBlock: 172.30.30.0/24 
-      AvailabilityZone: us-east-1a
-      MapPublicIpOnLaunch: true
-      Tags:
-        - Key: Name
-          Value: juliana-app-subnet
+  RepoUrl:
+    Type: String
+    Description: url do git
 
+  Branch:
+    Type: String
+    Description: branch
+    Default: main
+
+Resources:
   JulianaAppSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Libera portas 22 (SSH) e 8080 (App)
+      GroupDescription: Libera portas 22 (SSH) e 8000 (App)
       VpcId: !Ref VpcId
       SecurityGroupIngress:
         - IpProtocol: tcp
@@ -41,8 +43,8 @@ Resources:
           ToPort: 22
           CidrIp: !Ref MyIpAddress
         - IpProtocol: tcp
-          FromPort: 8080
-          ToPort: 8080
+          FromPort: 8000
+          ToPort: 8000
           CidrIp: 0.0.0.0/0
       Tags:
         - Key: Name
@@ -57,7 +59,7 @@ Resources:
       NetworkInterfaces:
         - AssociatePublicIpAddress: true
           DeviceIndex: '0'
-          SubnetId: !Ref JulianaAppSubnet
+          SubnetId: !Ref SubnetId
           GroupSet:
             - !Ref JulianaAppSecurityGroup
       Tags:
@@ -66,29 +68,31 @@ Resources:
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash
+          set -e
+
           apt-get update -y
           apt-get install -y docker.io git
+
           systemctl start docker
           systemctl enable docker
           usermod -aG docker ubuntu
 
           cd /home/ubuntu
-          rm -rf proway-docker/
-          git clone https://github.com/dartanghan/proway-docker.git
-          cd proway-docker/modulo7-iac_tooling
+
+          rm -rf app-repo/
+          git clone ${RepoUrl} app-repo
+          cd app-repo
+          git checkout ${Branch}
 
           docker build -t jewelry-app .
-          docker run -d -p 8080:80 jewelry-app
+          docker rm -f jewelry-app || true
+          docker run -d -p 8000:80 --name jewelry-app jewelry-app
 
 Outputs:
-  JulianaInstancePublicIP:
-    Description: IP público da instância EC2 da Juliana
+  PublicIP:
+    Description: IP público
     Value: !GetAtt JulianaAppInstance.PublicIp
-    Export:
-      Name: JulianaAppPublicIP
 
-  JulianaAppURL:
-    Description: URL para acessar a aplicação da Juliana
-    Value: !Sub http://${JulianaAppInstance.PublicIp}:8080
-    Export:
-      Name: JulianaAppURL
+  AppURL:
+    Description: Url pra acessar o app
+    Value: !Sub "http://${JulianaAppInstance.PublicIp}:8000"
