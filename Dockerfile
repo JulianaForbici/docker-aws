@@ -5,7 +5,7 @@ WORKDIR /app
 # Copia apenas os arquivos de dependência
 COPY package*.json ./
 
-# Yarn já existe na imagem, então basta isso:
+# Usa o yarn que já vem na imagem
 RUN yarn install
 
 # Copia o restante do código
