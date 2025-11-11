@@ -1,4 +1,4 @@
-# Desafio DevOps — Site de Joias na AWS
+# Desafio DevOps - Site de Joias na AWS - Utilizando CloudFormation
 
 Solução para subir um site estático/SPA (joalheria "NEW client") na AWS usando Docker e CloudFormation com automação via Makefile.
 
@@ -213,15 +213,6 @@ Dicas e troubleshooting
 aws cloudformation validate-template --template-body file://juliana-joias.yaml
 ```
 
----
-
-Contato / Autor
-
-Repositório: https://github.com/JulianaForbici/docker-aws  
-Autor: Juliana Forbici (JulianaForbici)
-
----
-
 Resumo rápido
 
 Local:
@@ -232,5 +223,3 @@ AWS:
 - Ajuste Makefile + aws configure
 - make deploy → http://<IP_PUBLICO>:8000
 - make delete-stack → remove recursos
-
-Pronto — infraestrutura simples, barata e reproduzível para hospedar o site de joias na AWS.
