@@ -1,6 +1,8 @@
-# Desafio DevOps - Site de Joias na AWS - Utilizando CloudFormation
+# Desafio DevOps - Site de Joias na AWS
 
-Solução para subir um site estático/SPA (joalheria "NEW client") na AWS usando Docker e CloudFormation com automação via Makefile.
+# Utilizando CloudFormation
+
+Solução para subir um site na AWS usando Docker e CloudFormation com automação via Makefile.
 
 Principais objetivos:
 - Infraestrutura provisionada na AWS (CloudFormation)
@@ -12,20 +14,6 @@ Principais objetivos:
 
 ---
 
-Sumário
-- Visão geral
-- Arquitetura
-- Estrutura do repositório
-- Pré-requisitos
-- Como usar (local / AWS)
-- Variáveis importantes (Makefile)
-- Targets úteis do Makefile
-- Segurança e custos
-- Limpeza
-- Dicas e troubleshooting
-
----
-
 Visão geral
 
 A solução provisiona uma única instância EC2 (t3.micro) que:
@@ -34,15 +22,13 @@ A solução provisiona uma única instância EC2 (t3.micro) que:
 - Faz build da imagem Docker (Nginx com arquivos estáticos)
 - Roda o container expondo a aplicação em http://<IP_PUBLICO>:8000
 
-A infraestrutura é descrita em CloudFormation para fácil criação/exclusão.
-
 ---
 
 Arquitetura
 
 - 1x EC2 t3.micro (us-east-1)
 - Security Group com regras:
-  - SSH (22) restrito ao seu IP (MY_IP / MyIpAddress)
+  - SSH (22) restrito ao IP
   - App (8000) aberto ao público (padrão, pode ajustar)
 - Docker executando a imagem construída a partir deste repositório
 - CloudFormation gera Security Group e EC2
